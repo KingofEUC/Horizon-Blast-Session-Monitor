@@ -146,4 +146,4 @@ If you find it useful, please share it with your VDI admin community. Every admi
 
 ---
 
-*Built by the APRO EUC Support Team. Tested on Horizon 8 (2306-2412) with Blast TCP and UDP transport.*
+*Built by the APRO EUC Support Team. Tested on Horizon 8 (2406-2512) with Blast TCP and UDP transport.*
