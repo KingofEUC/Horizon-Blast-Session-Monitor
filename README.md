@@ -1,4 +1,4 @@
-# Blast Session Performance Monitor — Free, Zero-Dependency PowerShell Tool
+# "Blast Session Performance Monitor" Free, Zero-Dependency PowerShell Tool
 
 **TL;DR:** A single PowerShell script that collects 18+ Horizon Blast performance metrics in real-time, stores 8 hours of history, and serves a live web dashboard — no installation, no agents, no ports opened. Double-click and go.
 
