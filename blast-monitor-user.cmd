@@ -2,23 +2,24 @@
 :: ============================================================
 :: BLAST SESSION MONITOR - User / VDI Endpoint
 :: ============================================================
-:: Bu dosyayi kullanicinin VDI masaustunde calistirin.
-:: Metrikleri toplar ve paylasimli klasore yazar.
+:: Run this on the VDI desktop to collect Blast session metrics.
+:: Metrics are stored in memory and optionally written to a
+:: network share for centralized monitoring.
 ::
-:: YAPILANDIRMA: Asagidaki OUTPUT_DIR degerini degistirin
+:: CONFIGURATION: Change the OUTPUT_DIR value below
 :: ============================================================
 
-:: Veri yazilacak paylasimli klasor (admin okuyacak)
+:: Network share path for centralized monitoring (admin reads this)
 set OUTPUT_DIR=\\fileserver\vdi-perf\%COMPUTERNAME%
 
-:: Toplama araligi (saniye)
+:: Collection interval (seconds)
 set INTERVAL=5
 
-:: Flush araligi - ne siklikta dosyaya yazilsin (saniye)
+:: Flush interval - how often to write data to file (seconds)
 set FLUSH_INTERVAL=30
 
 :: ============================================================
-:: Admin yetkisi iste (Input Delay counter icin gerekli)
+:: Request admin privileges (required for Input Delay counter)
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo Requesting admin privileges...

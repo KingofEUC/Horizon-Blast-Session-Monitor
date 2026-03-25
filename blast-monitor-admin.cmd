@@ -2,17 +2,17 @@
 :: ============================================================
 :: BLAST SESSION MONITOR - Admin / Remote Viewer
 :: ============================================================
-:: Bu dosyayi admin makinesinde calistirin.
-:: VDI endpoint'teki veriyi okur ve dashboard'da gosterir.
-:: Counter toplamaz, sadece izleme yapar.
+:: Run this on the admin workstation to monitor a remote VDI
+:: endpoint. Reads the JSON file produced by the user script
+:: and displays a live dashboard. Does not collect counters.
 ::
-:: YAPILANDIRMA: Asagidaki WATCH_FILE degerini degistirin
+:: CONFIGURATION: Change the WATCH_FILE value below
 :: ============================================================
 
-:: Izlenecek VDI'nin JSON dosyasi (VDI tarafinda blast-monitor-user.cmd olusturur)
-set WATCH_FILE=\\fileserver\vdi-perf\HOLWINVDI04\blast_live.json
+:: Path to the VDI endpoint's JSON file (created by blast-monitor-user.cmd)
+set WATCH_FILE=\\fileserver\vdi-perf\DESKTOP01\blast_live.json
 
-:: Dashboard portu (her VDI icin farkli port kullanabilirsiniz)
+:: Dashboard port (use different ports to monitor multiple VDIs)
 set PORT=8888
 
 :: ============================================================
