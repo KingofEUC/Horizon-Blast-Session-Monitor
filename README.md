@@ -55,18 +55,11 @@ Existing options are either too heavy (vROps + dashboards), require agents (Cont
 
 The dashboard is a single-page HTML app served from the script itself — no external dependencies.
 
-### Overview — Gauge Indicators
-Input Lag, RTT, Jitter, Packet Loss, Bandwidth, System/Encoder CPU, Memory, Disk Queue at a glance.
+### Overview — Gauges, Input Lag & RTT, Jitter & Packet Loss, Bandwidth & FPS, CPU Usage
+![Dashboard Overview](screenshots/hsbm_dashboard01.jpeg)
 
-### Detailed Charts
-- Bandwidth & FPS over time
-- System CPU vs Encoder CPU vs CPU Ready
-- FPS vs Dirty FPS (encoder bottleneck detection)
-- Memory utilization
-- Disk Queue, Read/Write Latency
-
-### Channel Traffic & Session Info
-Imaging TX, Audio TX, Session RX/TX, plus encoder type, transport protocol, and FPS summary.
+### FPS vs Dirty FPS, Memory, Disk I/O, Channel Traffic & Session Info
+![Dashboard Details](screenshots/hsbm_dashboard02.jpeg)
 
 ## Quick Start
 
