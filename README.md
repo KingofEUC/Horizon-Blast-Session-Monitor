@@ -8,7 +8,7 @@
 
 ## The Problem
 
-Every VDI admin has been there: a user calls saying "my screen is slow." You check the Connection Server, everything looks fine. You check the ESXi host — no contention. But the user insists something is wrong.
+Every VDI admin has been there: a user calls saying "my screen is slow." You check the Connection Server, everything looks fine. You check the ESXi host no contention. But the user insists something is wrong.
 
 The truth is, **Blast session quality is measured at the endpoint**, not the server. RTT, jitter, packet loss, input lag, encoder performance — these metrics exist in Windows Performance Counters on every VDI desktop with Horizon Agent, but nobody collects them systematically.
 
@@ -19,13 +19,13 @@ Existing options are either too heavy (vROps + dashboards), require agents (Cont
 **Blast Session Performance Monitor** is a single `.ps1` file (~1200 lines) that:
 
 - Runs on **any Windows VDI desktop** with Horizon Agent
-- **Zero installation** — copy, double-click, done
+- **Zero installation** copy, double-click, done
 - Collects **18 metrics** every 5 seconds from Windows Performance Counters
 - Serves a **real-time web dashboard** at `http://localhost:8888`
 - Stores **8 hours** of data in memory (full workday)
 - Exports to **CSV or JSON** for offline analysis
 - Optionally writes to a **network share** for centralized monitoring
-- **No firewall ports needed** — uses TcpListener on localhost only
+- **No firewall ports needed** uses TcpListener on localhost only
 - Works with **Blast TCP and UDP** transport
 
 ## Collected Metrics
@@ -55,7 +55,7 @@ Existing options are either too heavy (vROps + dashboards), require agents (Cont
 
 The dashboard is a single-page HTML app served from the script itself — no external dependencies.
 
-### Overview — Gauges, Input Lag & RTT, Jitter & Packet Loss, Bandwidth & FPS, CPU Usage
+### Overview: Gauges, Input Lag & RTT, Jitter & Packet Loss, Bandwidth & FPS, CPU Usage
 ![Dashboard Overview](screenshots/hsbm_dashboard01.jpeg)
 
 ### FPS vs Dirty FPS, Memory, Disk I/O, Channel Traffic & Session Info
