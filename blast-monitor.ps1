@@ -693,6 +693,7 @@ return @'
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
 <style>
 :root{--bg:#0f0f1a;--card:#1a1a2e;--card2:#16213e;--accent:#e94560;--blue:#4a9eff;--green:#00d084;--yellow:#f0b429;--red:#e94560;--text:#e0e0e0;--text2:#888;--border:#2a2a4a}
+:root.light{--bg:#f0f2f5;--card:#ffffff;--card2:#f8f9fa;--accent:#e94560;--blue:#2563eb;--green:#16a34a;--yellow:#d97706;--red:#dc2626;--text:#1a1a2e;--text2:#6b7280;--border:#d1d5db}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
 .header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
@@ -882,6 +883,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <input type="file" id="importInput" accept=".csv,.json" style="display:none" onchange="handleImport(this)">
     <button class="btn" onclick="document.getElementById('importInput').click()">Import File</button>
     <button class="btn btn-danger" onclick="stopCollector()">Stop Collector</button>
+    <span style="flex:1"></span>
+    <button class="btn" id="themeToggle" onclick="toggleTheme()" title="Toggle light/dark theme">☀️ Light</button>
 </div>
 
 <script>
@@ -894,6 +897,7 @@ let importedSessionInfo = null;
 let selectedMinutes = 30;
 let charts = {};
 let gaugeCtxs = {};
+let lastData = null;
 
 const GAUGE_CONFIG = {
     InputLag:   { min:0, max:500, thresholds:[50,150],  unit:'ms',   invert:false },
@@ -903,10 +907,53 @@ const GAUGE_CONFIG = {
     Bandwidth:  { min:0, max:200, thresholds:[50,100],  unit:'Mbps', invert:true  }
 };
 
-const COLORS = {
+let COLORS = {
     accent:'#e94560', blue:'#4a9eff', green:'#00d084',
-    yellow:'#f0b429', text2:'#888', grid:'#2a2a4a'
+    yellow:'#f0b429', text2:'#888', grid:'#2a2a4a', gaugebg:'#2a2a4a'
 };
+const DARK_COLORS = {
+    accent:'#e94560', blue:'#4a9eff', green:'#00d084',
+    yellow:'#f0b429', text2:'#888', grid:'#2a2a4a', gaugebg:'#2a2a4a'
+};
+const LIGHT_COLORS = {
+    accent:'#dc2626', blue:'#2563eb', green:'#16a34a',
+    yellow:'#d97706', text2:'#6b7280', grid:'#e5e7eb', gaugebg:'#e5e7eb'
+};
+
+function toggleTheme() {
+    const root = document.documentElement;
+    const isLight = root.classList.toggle('light');
+    COLORS = isLight ? {...LIGHT_COLORS} : {...DARK_COLORS};
+    const btn = document.getElementById('themeToggle');
+    btn.textContent = isLight ? '\uD83C\uDF19 Dark' : '\u2600\uFE0F Light';
+    localStorage.setItem('hat-theme', isLight ? 'light' : 'dark');
+    // Re-render charts with new colors
+    Object.values(charts).forEach(c => {
+        if (c && c.options) {
+            c.options.scales.x.ticks.color = COLORS.text2;
+            c.options.scales.x.grid.color = COLORS.grid;
+            Object.keys(c.options.scales).forEach(k => {
+                if (k !== 'x') {
+                    c.options.scales[k].ticks.color = COLORS.text2;
+                    c.options.scales[k].grid.color = COLORS.grid;
+                }
+            });
+            c.update('none');
+        }
+    });
+    // Re-draw gauges
+    updateGauges(lastData);
+}
+
+// Restore saved theme
+(function() {
+    if (localStorage.getItem('hat-theme') === 'light') {
+        document.documentElement.classList.add('light');
+        COLORS = {...LIGHT_COLORS};
+        const btn = document.getElementById('themeToggle');
+        if (btn) btn.textContent = '\uD83C\uDF19 Dark';
+    }
+})();
 
 // ============================================================
 // GAUGE DRAWING (canvas-based semicircle)
@@ -924,7 +971,7 @@ function drawGauge(canvasId, value, config) {
     ctx.beginPath();
     ctx.arc(cx, cy, r, Math.PI, 0, false);
     ctx.lineWidth = 12;
-    ctx.strokeStyle = '#2a2a4a';
+    ctx.strokeStyle = COLORS.gaugebg;
     ctx.stroke();
 
     if (value === null || value === undefined) return;
@@ -1189,6 +1236,7 @@ async function poll() {
         document.getElementById('statusText').textContent = hasSample ? 'Live' : 'No Session';
         document.getElementById('hdrCount').textContent = data.sampleCount || 0;
 
+        lastData = data.sample;
         updateGauges(data.sample);
         updateSessionInfo(data.sessionInfo);
 
@@ -1391,16 +1439,22 @@ if ($ImportFile -and (Test-Path $ImportFile)) {
 function Flush-ToOutputDir {
     if (-not $OutputDir) { return }
     try {
-        if (-not (Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null }
+        if (-not (Test-Path $OutputDir)) {
+            New-Item -ItemType Directory -Path $OutputDir -Force -ErrorAction Stop | Out-Null
+        }
         $filePath = Join-Path $OutputDir "blast_live.json"
         $data = @{
             sessionInfo = $script:SessionInfo
             exportTime  = Format-Timestamp (Get-GMTPlus3)
             samples     = @($script:Samples)
         }
-        $data | ConvertTo-Json -Depth 10 | Set-Content $filePath -Encoding UTF8
+        $data | ConvertTo-Json -Depth 10 | Set-Content $filePath -Encoding UTF8 -ErrorAction Stop
     } catch {
-        Write-Host "  [WARN] Flush failed: $_" -ForegroundColor Yellow
+        # Silent after first warning — don't spam console
+        if (-not $script:FlushWarnShown) {
+            Write-Host "  [WARN] Output dir not writable: $OutputDir — data kept in memory only" -ForegroundColor Yellow
+            $script:FlushWarnShown = $true
+        }
     }
 }
 
@@ -1535,9 +1589,9 @@ try {
                         if ($null -ne $latest.InputLag) { $il = [string]$latest.InputLag + "ms" } else { $il = "-" }
                         if ($null -ne $latest.PacketLoss) { $pl = [string]$latest.PacketLoss + "%" } else { $pl = "-" }
                         if ($null -ne $latest.CpuReady) { $rdy = [string]$latest.CpuReady + "ms" } else { $rdy = "-" }
-                        Write-Host ("  [{0}] RTT={1}ms Jitter={2}ms IL={3} PL={4} BW={5}Mbps FPS={6} CPU={7}% EncCPU={8} RDY={9} Enc={10} TP={11} ({12} samples)" -f $latest.Timestamp, $latest.RTT, $latest.Jitter, $il, $pl, $bwMbps, $latest.FPS, $latest.SystemCPU, $encCpu, $rdy, $enc, $tp, $count) -ForegroundColor DarkGray
+                        Write-Host ("  [{0}] RTT={1}ms Jitter={2}ms IL={3} PL={4} BW={5}Mbps FPS={6} CPU={7}% EncCPU={8} RDY={9} Enc={10} TP={11} [{12} samples]" -f $latest.Timestamp, $latest.RTT, $latest.Jitter, $il, $pl, $bwMbps, $latest.FPS, $latest.SystemCPU, $encCpu, $rdy, $enc, $tp, $count) -ForegroundColor DarkGray
                     } else {
-                        Write-Host ("  [{0}] No active Blast session ({1} samples)" -f (Format-Timestamp (Get-GMTPlus3)), $count) -ForegroundColor DarkYellow
+                        Write-Host ("  [{0}] No active Blast session [{1} samples]" -f (Format-Timestamp (Get-GMTPlus3)), $count) -ForegroundColor DarkYellow
                     }
                 } catch {
                     Write-Host "  [ERROR] Collection failed: $_" -ForegroundColor Red
