@@ -391,7 +391,7 @@ function Collect-Sample {
     }
 
     # Encoder Max FPS (one-time registry read)
-    # Encoder Max FPS (one-time — check policy, then config, multiple vendors)
+    # Encoder Max FPS (one-time - check policy, then config, multiple vendors)
     if ($null -eq $script:EncoderMaxFps) {
         $script:EncoderMaxFps = 30  # default
         $fpsSource = "default"
@@ -1450,9 +1450,9 @@ function Flush-ToOutputDir {
         }
         $data | ConvertTo-Json -Depth 10 | Set-Content $filePath -Encoding UTF8 -ErrorAction Stop
     } catch {
-        # Silent after first warning — don't spam console
+        # Silent after first warning - don't spam console
         if (-not $script:FlushWarnShown) {
-            Write-Host "  [WARN] Output dir not writable: $OutputDir — data kept in memory only" -ForegroundColor Yellow
+            Write-Host "  [WARN] Output dir not writable: $OutputDir - data kept in memory only" -ForegroundColor Yellow
             $script:FlushWarnShown = $true
         }
     }
